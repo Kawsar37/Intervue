@@ -1,16 +1,25 @@
+"use client";
+
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Bot,
   FileText,
   BarChart3,
   Target,
   ChevronRight,
+  Star,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const features = [
   {
@@ -58,14 +67,40 @@ const steps = [
   },
 ];
 
-const stats = [
-  { value: "10K+", label: "Active Users" },
-  { value: "50K+", label: "Interviews Completed" },
-  { value: "95%", label: "Success Rate" },
-  { value: "4.9/5", label: "User Rating" },
-];
-
 export default function HomePage() {
+  const { data: statsResponse } = useQuery({
+    queryKey: ["platform-stats"],
+    queryFn: () => api.get("/stats"),
+  });
+
+  const { data: testimonialsResponse } = useQuery({
+    queryKey: ["testimonials"],
+    queryFn: () => api.get("/testimonials"),
+  });
+
+  const { data: faqsResponse } = useQuery({
+    queryKey: ["faqs"],
+    queryFn: () => api.get("/faqs"),
+  });
+
+  const stats = statsResponse?.data;
+  const testimonials = testimonialsResponse?.data || [];
+  const faqs = faqsResponse?.data || [];
+
+  const platformStats = stats
+    ? [
+        { value: `${stats.totalUsers}+`, label: "Active Users" },
+        { value: `${stats.totalInterviews}+`, label: "Interviews Completed" },
+        { value: `${stats.totalResumes}+`, label: "Resumes Analyzed" },
+        { value: "4.9/5", label: "User Rating" },
+      ]
+    : [
+        { value: "0", label: "Active Users" },
+        { value: "0", label: "Interviews Completed" },
+        { value: "0", label: "Resumes Analyzed" },
+        { value: "4.9/5", label: "User Rating" },
+      ];
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -151,12 +186,69 @@ export default function HomePage() {
         {/* Stats Section */}
         <section className="border-t bg-muted/50 py-20">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {stats.map((stat) => (
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold">Trusted by Thousands</h2>
+              <p className="mt-4 text-muted-foreground">
+                Join our growing community of job seekers.
+              </p>
+            </div>
+            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {platformStats.map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className="text-4xl font-bold">{stat.value}</div>
                   <div className="mt-2 text-sm text-muted-foreground">{stat.label}</div>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold">What Our Users Say</h2>
+              <p className="mt-4 text-muted-foreground">
+                Hear from people who landed their dream jobs with Intervue.
+              </p>
+            </div>
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial: any) => (
+                <Card key={testimonial._id} className="border-0 bg-background shadow-sm">
+                  <CardContent className="pt-6">
+                    <div className="mb-3 flex gap-1">
+                      {Array.from({ length: testimonial.rating }).map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      &ldquo;{testimonial.content}&rdquo;
+                    </p>
+                    <div>
+                      <p className="font-semibold">{testimonial.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.role} at {testimonial.company}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="border-t bg-muted/50 py-20">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
+              <p className="mt-4 text-muted-foreground">
+                Everything you need to know about Intervue.
+              </p>
+            </div>
+            <div className="mx-auto mt-12 max-w-3xl space-y-4">
+              {faqs.map((faq: any) => (
+                <FaqItem key={faq._id} question={faq.question} answer={faq.answer} />
               ))}
             </div>
           </div>
@@ -186,6 +278,31 @@ export default function HomePage() {
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="rounded-lg border bg-background">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between p-4 text-left font-medium"
+      >
+        {question}
+        {isOpen ? (
+          <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
+        ) : (
+          <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="px-4 pb-4 text-sm text-muted-foreground">
+          {answer}
+        </div>
+      )}
     </div>
   );
 }

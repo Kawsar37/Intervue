@@ -8,7 +8,11 @@ import resumeRoutes from "./routes/resumeRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import interviewRoutes from "./routes/interviewRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import testimonialRoutes from "./routes/testimonialRoutes";
+import faqRoutes from "./routes/faqRoutes";
+import statsRoutes from "./routes/statsRoutes";
 import { seedTemplates } from "./utils/seedTemplates";
+import { seedTestimonialsAndFaq } from "./utils/seedTestimonials";
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +39,9 @@ app.use("/api/resumes", resumeRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/faqs", faqRoutes);
+app.use("/api/stats", statsRoutes);
 
 // Error handling
 app.use(notFoundHandler);
@@ -45,6 +52,7 @@ const startServer = async () => {
   try {
     await connectDB();
     await seedTemplates();
+    await seedTestimonialsAndFaq();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
