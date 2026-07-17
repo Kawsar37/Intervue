@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import resumeRoutes from "./routes/resumeRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import interviewRoutes from "./routes/interviewRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { seedTemplates } from "./utils/seedTemplates";
 
 // Load environment variables
@@ -31,6 +32,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Error handling
 app.use(notFoundHandler);
