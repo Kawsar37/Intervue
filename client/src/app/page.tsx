@@ -68,17 +68,17 @@ const steps = [
 ];
 
 export default function HomePage() {
-  const { data: statsResponse } = useQuery({
+  const { data: statsResponse } = useQuery<{ success: boolean; data: { totalUsers: number; totalInterviews: number; totalResumes: number } }>({
     queryKey: ["platform-stats"],
     queryFn: () => api.get("/stats"),
   });
 
-  const { data: testimonialsResponse } = useQuery({
+  const { data: testimonialsResponse } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ["testimonials"],
     queryFn: () => api.get("/testimonials"),
   });
 
-  const { data: faqsResponse } = useQuery({
+  const { data: faqsResponse } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ["faqs"],
     queryFn: () => api.get("/faqs"),
   });

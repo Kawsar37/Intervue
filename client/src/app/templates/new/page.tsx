@@ -118,7 +118,7 @@ export default function AddTemplatePage() {
 
                   <div className="space-y-2">
                     <Label>Difficulty *</Label>
-                    <Select value={difficulty} onValueChange={setDifficulty}>
+                    <Select value={difficulty} onValueChange={(v) => setDifficulty(v || "")}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select difficulty" />
                       </SelectTrigger>

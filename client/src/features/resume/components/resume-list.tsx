@@ -41,7 +41,9 @@ export function ResumeList() {
     );
   }
 
-  if (!resumes || resumes.length === 0) {
+  const resumeList = resumes?.data || [];
+
+  if (resumeList.length === 0) {
     return (
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground">
@@ -55,7 +57,7 @@ export function ResumeList() {
 
   return (
     <div className="space-y-4">
-      {resumes.map((resume) => (
+      {resumeList.map((resume) => (
         <Card key={resume._id}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">

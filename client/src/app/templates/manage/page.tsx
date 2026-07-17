@@ -209,7 +209,7 @@ export default function ManageTemplatesPage() {
                 <Label>Difficulty</Label>
                 <Select
                   value={editForm.difficulty}
-                  onValueChange={(v) => setEditForm({ ...editForm, difficulty: v })}
+                  onValueChange={(v) => setEditForm({ ...editForm, difficulty: v || "" })}
                 >
                   <SelectTrigger>
                     <SelectValue />

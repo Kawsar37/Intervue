@@ -32,8 +32,8 @@ router.all("/*", async (req, res) => {
         },
       });
       // Set session cookie only - don't return token in body
-      if (result.session) {
-        const cookie = `better-auth.session_token=${result.session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`;
+      if (result.token) {
+        const cookie = `better-auth.session_token=${result.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`;
         res.setHeader("Set-Cookie", cookie);
       }
       const user = result.user;

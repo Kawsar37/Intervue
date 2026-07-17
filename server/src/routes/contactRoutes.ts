@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { body } from "express-validator";
 import { validate } from "../middleware/validate";
 import { Contact } from "../models/Contact";
@@ -14,7 +14,7 @@ router.post(
     body("message").isLength({ min: 10 }).withMessage("Message must be at least 10 characters"),
   ],
   validate,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const contact = await Contact.create(req.body);
     res.status(201).json({
       success: true,
