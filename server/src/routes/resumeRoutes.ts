@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { body } from "express-validator";
-import { validate } from "../middleware/validate";
+import { upload } from "../config/multer";
 import {
   uploadResume,
   getResumes,
@@ -10,14 +9,7 @@ import {
 
 const router = Router();
 
-router.post(
-  "/",
-  [
-    body("fileName").optional().isString(),
-  ],
-  validate,
-  uploadResume
-);
+router.post("/", upload.single("resume"), uploadResume);
 
 router.get("/", getResumes);
 
