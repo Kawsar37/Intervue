@@ -27,10 +27,11 @@ export function StartInterviewForm() {
   const { data: templatesData, isLoading: templatesLoading } = useTemplates({
     limit: 50,
   });
-  const { data: resumes, isLoading: resumesLoading } = useResumes();
+  const { data: resumesData, isLoading: resumesLoading } = useResumes();
   const startInterviewMutation = useStartInterview();
 
   const templates = templatesData?.data || [];
+  const resumes = resumesData?.data || [];
   const selectedTemplate = templates.find((t) => t._id === selectedTemplateId);
 
   const handleTemplateChange = (value: string | null) => {
@@ -42,26 +43,16 @@ export function StartInterviewForm() {
   };
 
   const handleStart = async () => {
-    if (!selectedTemplate) return;
-
-    // Generate mock questions based on template
-    const questions = Array.from(
-      { length: Math.min(selectedTemplate.questionCount, 5) },
-      (_, i) => ({
-        question: `Question ${i + 1}: Tell me about your experience with ${selectedTemplate.tags[i % selectedTemplate.tags.length] || "this topic"}.`,
-        category: selectedTemplate.category,
-      })
-    );
+    if (!selectedTemplateId) return;
 
     try {
-      const interview = await startInterviewMutation.mutateAsync({
+      const result = await startInterviewMutation.mutateAsync({
         templateId: selectedTemplateId,
         resumeId: selectedResumeId || undefined,
         jobDescription: jobDescription || undefined,
-        questions,
       });
 
-      router.push(`/interviews/${interview._id}/session`);
+      router.push(`/interviews/${result.data._id}/session`);
     } catch (error) {
       console.error("Failed to start interview:", error);
     }
@@ -164,7 +155,7 @@ export function StartInterviewForm() {
         {startInterviewMutation.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Starting Interview...
+            Generating Questions with AI...
           </>
         ) : (
           <>
