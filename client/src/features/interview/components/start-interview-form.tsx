@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Play } from "lucide-react";
+import { toast } from "sonner";
 
 export function StartInterviewForm() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export function StartInterviewForm() {
   };
 
   const handleResumeChange = (value: string | null) => {
-    setSelectedResumeId(value || "");
+    setSelectedResumeId(value === "none" ? "" : value || "");
   };
 
   const handleStart = async () => {
@@ -54,7 +55,7 @@ export function StartInterviewForm() {
 
       router.push(`/interviews/${result.data._id}/session`);
     } catch (error) {
-      console.error("Failed to start interview:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to start interview. Please try again.");
     }
   };
 

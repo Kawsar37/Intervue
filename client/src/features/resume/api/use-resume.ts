@@ -31,6 +31,7 @@ export function useUploadResume() {
 
       const response = await fetch(`${API_URL}/resumes`, {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 

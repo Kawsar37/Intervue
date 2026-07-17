@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,30 +11,31 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageSquare, Send, Loader2, CheckCircle } from "lucide-react";
+import { contactSchema, type ContactInput } from "@/lib/validations";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function ContactPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
+  });
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-
-    // Reset form
-    setName("");
-    setEmail("");
-    setSubject("");
-    setMessage("");
+  const onSubmit = async (data: ContactInput) => {
+    try {
+      await api.post("/contact", data);
+      toast.success("Message sent successfully!");
+      setIsSubmitted(true);
+      reset();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to send message");
+    }
   };
 
   return (
@@ -80,17 +83,18 @@ export default function ContactPage() {
                       </Button>
                     </div>
                   ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="name">Name</Label>
                           <Input
                             id="name"
                             placeholder="Your name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
+                            {...register("name")}
                           />
+                          {errors.name && (
+                            <p className="text-sm text-destructive">{errors.name.message}</p>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="email">Email</Label>
@@ -98,10 +102,11 @@ export default function ContactPage() {
                             id="email"
                             type="email"
                             placeholder="your@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
+                            {...register("email")}
                           />
+                          {errors.email && (
+                            <p className="text-sm text-destructive">{errors.email.message}</p>
+                          )}
                         </div>
                       </div>
 
@@ -110,10 +115,11 @@ export default function ContactPage() {
                         <Input
                           id="subject"
                           placeholder="How can we help?"
-                          value={subject}
-                          onChange={(e) => setSubject(e.target.value)}
-                          required
+                          {...register("subject")}
                         />
+                        {errors.subject && (
+                          <p className="text-sm text-destructive">{errors.subject.message}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -121,11 +127,12 @@ export default function ContactPage() {
                         <Textarea
                           id="message"
                           placeholder="Tell us more about your inquiry..."
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
                           rows={5}
-                          required
+                          {...register("message")}
                         />
+                        {errors.message && (
+                          <p className="text-sm text-destructive">{errors.message.message}</p>
+                        )}
                       </div>
 
                       <Button
@@ -179,43 +186,6 @@ export default function ContactPage() {
                   </p>
                 </CardContent>
               </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="border-t bg-muted/50 py-20">
-          <div className="container mx-auto px-4 md:px-6">
-            <h2 className="text-3xl font-bold text-center mb-12">
-              Frequently Asked Questions
-            </h2>
-            <div className="mx-auto max-w-2xl space-y-4">
-              {[
-                {
-                  question: "Is Intervue free to use?",
-                  answer:
-                    "Yes, Intervue offers a free tier with access to basic features. Premium plans are available for advanced features and unlimited interviews.",
-                },
-                {
-                  question: "How does the AI feedback work?",
-                  answer:
-                    "Our AI analyzes your answers, provides constructive feedback, and scores your performance based on industry standards and best practices.",
-                },
-                {
-                  question: "Can I practice for specific job roles?",
-                  answer:
-                    "Absolutely! We offer templates for various roles including software engineering, data science, product management, and more.",
-                },
-              ].map((faq) => (
-                <Card key={faq.question}>
-                  <CardContent className="pt-6">
-                    <h3 className="font-semibold">{faq.question}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {faq.answer}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </div>
         </section>

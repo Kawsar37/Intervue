@@ -11,6 +11,7 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import testimonialRoutes from "./routes/testimonialRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import statsRoutes from "./routes/statsRoutes";
+import contactRoutes from "./routes/contactRoutes";
 import { seedTemplates } from "./utils/seedTemplates";
 import { seedTestimonialsAndFaq } from "./utils/seedTestimonials";
 
@@ -42,6 +43,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Error handling
 app.use(notFoundHandler);

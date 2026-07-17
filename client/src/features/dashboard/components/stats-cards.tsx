@@ -7,12 +7,14 @@ interface StatsCardsProps {
   totalInterviews: number;
   completedInterviews: number;
   averageScore: number;
+  monthlyInterviews: number;
 }
 
 export function StatsCards({
   totalInterviews,
   completedInterviews,
   averageScore,
+  monthlyInterviews,
 }: StatsCardsProps) {
   const stats = [
     {
@@ -35,7 +37,7 @@ export function StatsCards({
     },
     {
       title: "This Month",
-      value: completedInterviews,
+      value: monthlyInterviews,
       icon: Calendar,
       description: "Interviews this month",
     },

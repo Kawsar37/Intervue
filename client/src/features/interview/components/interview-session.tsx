@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, ChevronLeft, ChevronRight, Check, Star } from "lucide-react";
+import { toast } from "sonner";
 
 interface InterviewSessionProps {
   interviewId: string;
@@ -76,7 +77,7 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
         [currentIndex]: result.data.evaluation,
       }));
     } catch (error) {
-      console.error("Failed to submit answer:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit answer. Please try again.");
     }
   };
 
@@ -85,7 +86,7 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
       await completeInterviewMutation.mutateAsync(interviewId);
       router.push(`/interviews/${interviewId}/result`);
     } catch (error) {
-      console.error("Failed to complete interview:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to complete interview. Please try again.");
     }
   };
 

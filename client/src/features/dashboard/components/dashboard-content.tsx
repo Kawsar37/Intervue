@@ -31,6 +31,12 @@ export function DashboardContent() {
     (i) => i.status === "completed"
   );
 
+  const now = new Date();
+  const thisMonth = completedInterviews.filter((i) => {
+    const d = new Date(i.completedAt || i.createdAt);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+
   const avgScore =
     completedInterviews.length > 0
       ? Math.round(
@@ -71,6 +77,7 @@ export function DashboardContent() {
         totalInterviews={allInterviews.length}
         completedInterviews={completedInterviews.length}
         averageScore={avgScore}
+        monthlyInterviews={thisMonth.length}
       />
 
       <QuickActions />
