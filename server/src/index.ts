@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/database";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import authRoutes from "./routes/authRoutes";
 import resumeRoutes from "./routes/resumeRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import interviewRoutes from "./routes/interviewRoutes";
@@ -29,6 +30,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/interviews", interviewRoutes);

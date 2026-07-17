@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import { validate } from "../middleware/validate";
+import { authMiddleware } from "../middleware/auth";
 import {
   startInterview,
   getInterviews,
@@ -12,19 +13,12 @@ import {
 
 const router = Router();
 
+router.use(authMiddleware);
+
 router.post(
   "/",
   [
     body("templateId").notEmpty().withMessage("Template ID is required"),
-    body("questions")
-      .isArray({ min: 1 })
-      .withMessage("At least one question is required"),
-    body("questions.*.question")
-      .notEmpty()
-      .withMessage("Question text is required"),
-    body("questions.*.category")
-      .notEmpty()
-      .withMessage("Question category is required"),
   ],
   validate,
   startInterview
@@ -41,9 +35,6 @@ router.post(
       .isInt({ min: 0 })
       .withMessage("Question index must be a non-negative integer"),
     body("answer").notEmpty().withMessage("Answer is required"),
-    body("score")
-      .isFloat({ min: 0, max: 10 })
-      .withMessage("Score must be between 0 and 10"),
   ],
   validate,
   submitAnswer

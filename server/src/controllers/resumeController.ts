@@ -1,3 +1,4 @@
+import fs from "fs";
 import { Response } from "express";
 import { AuthRequest } from "../types";
 import { Resume } from "../models/Resume";
@@ -85,7 +86,6 @@ export const deleteResume = async (
   }
 
   // Delete the file from disk
-  const fs = require("fs");
   if (fs.existsSync(resume.fileUrl)) {
     fs.unlinkSync(resume.fileUrl);
   }

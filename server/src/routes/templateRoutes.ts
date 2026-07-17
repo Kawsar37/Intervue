@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import { validate } from "../middleware/validate";
+import { authMiddleware } from "../middleware/auth";
 import {
   getTemplates,
   getTemplateById,
@@ -14,6 +15,8 @@ const router = Router();
 router.get("/", getTemplates);
 
 router.get("/:id", getTemplateById);
+
+router.use(authMiddleware);
 
 router.post(
   "/",
