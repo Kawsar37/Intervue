@@ -7,16 +7,16 @@ import { Resume } from "@/types";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export function useResumes() {
-  return useQuery<Resume[]>({
+  return useQuery<{ success: boolean; data: Resume[] }>({
     queryKey: ["resumes"],
-    queryFn: () => api.get<Resume[]>("/resumes"),
+    queryFn: () => api.get("/resumes"),
   });
 }
 
 export function useResume(id: string) {
-  return useQuery<Resume>({
+  return useQuery<{ success: boolean; data: Resume }>({
     queryKey: ["resumes", id],
-    queryFn: () => api.get<Resume>(`/resumes/${id}`),
+    queryFn: () => api.get(`/resumes/${id}`),
     enabled: !!id,
   });
 }
@@ -41,7 +41,8 @@ export function useUploadResume() {
         throw new Error(error.message);
       }
 
-      return response.json();
+      const result = await response.json();
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resumes"] });
@@ -53,7 +54,7 @@ export function useDeleteResume() {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, string>({
-    mutationFn: (id) => api.delete<void>(`/resumes/${id}`),
+    mutationFn: (id) => api.delete(`/resumes/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resumes"] });
     },

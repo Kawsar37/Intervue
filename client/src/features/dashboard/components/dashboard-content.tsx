@@ -10,7 +10,10 @@ import { QuickActions } from "./quick-actions";
 import { Loader2 } from "lucide-react";
 
 export function DashboardContent() {
-  const { data: interviews, isLoading } = useQuery<Interview[]>({
+  const { data: interviewsResponse, isLoading } = useQuery<{
+    success: boolean;
+    data: Interview[];
+  }>({
     queryKey: ["interviews"],
     queryFn: () => api.get("/interviews"),
   });
@@ -23,12 +26,11 @@ export function DashboardContent() {
     );
   }
 
-  const allInterviews = interviews || [];
+  const allInterviews = interviewsResponse?.data || [];
   const completedInterviews = allInterviews.filter(
     (i) => i.status === "completed"
   );
 
-  // Calculate average score from completed interviews
   const avgScore =
     completedInterviews.length > 0
       ? Math.round(
@@ -45,9 +47,10 @@ export function DashboardContent() {
         )
       : 0;
 
-  // Generate performance chart data
-  const chartData = completedInterviews.slice(-7).map((interview, index) => ({
-    date: new Date(interview.completedAt || interview.createdAt).toLocaleDateString("en-US", {
+  const chartData = completedInterviews.slice(-7).map((interview) => ({
+    date: new Date(
+      interview.completedAt || interview.createdAt
+    ).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     }),

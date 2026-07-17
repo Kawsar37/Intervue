@@ -14,9 +14,9 @@ interface InterviewResultProps {
 }
 
 export function InterviewResult({ interviewId }: InterviewResultProps) {
-  const { data: interview, isLoading: interviewLoading } =
+  const { data: interviewResponse, isLoading: interviewLoading } =
     useInterview(interviewId);
-  const { data: result, isLoading: resultLoading } =
+  const { data: resultResponse, isLoading: resultLoading } =
     useInterviewResult(interviewId);
 
   if (interviewLoading || resultLoading) {
@@ -27,6 +27,9 @@ export function InterviewResult({ interviewId }: InterviewResultProps) {
     );
   }
 
+  const interview = interviewResponse?.data;
+  const result = resultResponse?.data;
+
   if (!interview) {
     return (
       <div className="py-12 text-center text-muted-foreground">
@@ -35,18 +38,24 @@ export function InterviewResult({ interviewId }: InterviewResultProps) {
     );
   }
 
-  // Calculate mock result if no result exists
-  const overallScore = result?.overallScore || 75;
-  const categoryScores = result?.categoryScores || [
-    { category: "Technical Skills", score: 80, feedback: "Good technical knowledge" },
-    { category: "Communication", score: 70, feedback: "Clear and concise answers" },
-    { category: "Problem Solving", score: 75, feedback: "Good approach to problems" },
-  ];
-  const recommendations = result?.recommendations || [
-    "Practice more system design questions",
-    "Work on explaining complex concepts simply",
-    "Review common algorithms and data structures",
-  ];
+  if (!result) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">
+              Final results are being generated. Please check back shortly.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const overallScore = result.overallScore;
+  const categoryScores = result.categoryScores;
+  const recommendations = result.recommendations;
 
   return (
     <div className="space-y-6">
@@ -65,50 +74,66 @@ export function InterviewResult({ interviewId }: InterviewResultProps) {
         </CardContent>
       </Card>
 
+      {/* Overall Feedback */}
+      {result.feedback && (
+        <Card>
+          <CardHeader>
+            <CardTitle>AI Feedback</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">{result.feedback}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Category Scores */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Category Breakdown
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {categoryScores.map((category) => (
-            <div key={category.category} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{category.category}</span>
-                <Badge variant={category.score >= 70 ? "default" : "secondary"}>
-                  {category.score}/100
-                </Badge>
+      {categoryScores.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Category Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {categoryScores.map((category) => (
+              <div key={category.category} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{category.category}</span>
+                  <Badge variant={category.score >= 7 ? "default" : "secondary"}>
+                    {category.score}/10
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {category.feedback}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {category.feedback}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5" />
-            Recommendations
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-3">
-            {recommendations.map((rec, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="mt-0.5 text-primary">•</span>
-                <span>{rec}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      {recommendations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5" />
+              Recommendations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {recommendations.map((rec, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="mt-0.5 text-primary">•</span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Question Review */}
       <Card>
