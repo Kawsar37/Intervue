@@ -17,7 +17,9 @@ router.all("/*", async (req, res) => {
           password: body.password,
         },
       });
-      res.json({ data: result });
+      // Only return user data, not session token
+      const user = result.user || result;
+      res.json({ data: { user } });
       return;
     }
 
@@ -29,32 +31,28 @@ router.all("/*", async (req, res) => {
           password: body.password,
         },
       });
-      // Set session cookie
+      // Set session cookie only - don't return token in body
       if (result.session) {
         const cookie = `better-auth.session_token=${result.session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`;
         res.setHeader("Set-Cookie", cookie);
       }
-      res.json({ data: result });
+      const user = result.user;
+      res.json({ data: { user } });
       return;
     }
 
     if (path === "/sign-out" && req.method === "POST") {
-      const cookies = req.headers.cookie || "";
-      const sessionCookie = cookies
-        .split(";")
-        .map((c) => c.trim())
-        .find((c) => c.startsWith("better-auth.session_token="));
-
-      if (sessionCookie) {
-        const token = sessionCookie.split("=")[1];
+      try {
         await auth.api.signOut({
-          headers: new Headers({ cookie: cookies }),
+          headers: new Headers({ cookie: req.headers.cookie || "" }),
         });
-        res.setHeader(
-          "Set-Cookie",
-          "better-auth.session_token=; Path=/; HttpOnly; Max-Age=0"
-        );
+      } catch {
+        // Ignore errors on sign-out
       }
+      res.setHeader(
+        "Set-Cookie",
+        "better-auth.session_token=; Path=/; HttpOnly; Max-Age=0"
+      );
       res.json({ success: true });
       return;
     }
@@ -65,7 +63,17 @@ router.all("/*", async (req, res) => {
           cookie: req.headers.cookie || "",
         }),
       });
-      res.json({ data: session });
+      // Only return user data and session metadata, not the token
+      const safeSession = session
+        ? {
+            user: session.user,
+            session: {
+              id: session.session?.id,
+              expiresAt: session.session?.expiresAt,
+            },
+          }
+        : null;
+      res.json({ data: safeSession });
       return;
     }
 

@@ -1,36 +1,27 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./errorHandler";
+import { auth } from "../config/auth";
 
-export const authMiddleware = (
+export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
-  const cookies = req.headers.cookie || "";
-  const sessionCookie = cookies
-    .split(";")
-    .map((c) => c.trim())
-    .find((c) => c.startsWith("better-auth.session_token="));
+): Promise<void> => {
+  try {
+    const session = await auth.api.getSession({
+      headers: new Headers({
+        cookie: req.headers.cookie || "",
+      }),
+    });
 
-  if (sessionCookie) {
-    const token = sessionCookie.split("=")[1];
-    try {
-      const parts = token.split(".");
-      if (parts.length === 3) {
-        const payload = JSON.parse(
-          Buffer.from(parts[1], "base64url").toString()
-        );
-        (req as any).userId = payload.userId || payload.sub;
-        (req as any).userEmail = payload.email;
-      }
-    } catch {
-      // Token decode failed
+    if (!session?.user?.id) {
+      throw new AppError("Unauthorized - please sign in", 401);
     }
-  }
 
-  if (!(req as any).userId) {
+    (req as any).userId = session.user.id;
+    (req as any).userEmail = session.user.email;
+    next();
+  } catch {
     throw new AppError("Unauthorized - please sign in", 401);
   }
-
-  next();
 };
