@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import resumeRoutes from "./routes/resumeRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import interviewRoutes from "./routes/interviewRoutes";
+import { seedTemplates } from "./utils/seedTemplates";
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+    await seedTemplates();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
