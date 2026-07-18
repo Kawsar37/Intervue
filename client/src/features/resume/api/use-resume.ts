@@ -32,6 +32,9 @@ export function useUploadResume() {
       const response = await fetch(`${API_URL}/resumes`, {
         method: "POST",
         credentials: "include",
+        headers: {
+          Authorization: `Bearer ${document.cookie.match(/(?:^|;\s*)better-auth\.session_token=([^;]*)/)?.[1] || ""}`,
+        },
         body: formData,
       });
 
