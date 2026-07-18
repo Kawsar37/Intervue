@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { useFavorites } from "@/features/template/api/use-favorites";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Heart, Clock, BookOpen, Loader2, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,9 +56,9 @@ export default function FavoritesPage() {
               <p className="text-sm text-muted-foreground mt-1">
                 Browse templates and click the heart icon to save them here.
               </p>
-              <Button asChild className="mt-4">
-                <Link href="/templates">Browse Templates</Link>
-              </Button>
+              <Link href="/templates" className={cn(buttonVariants(), "mt-4")}>
+                Browse Templates
+              </Link>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
