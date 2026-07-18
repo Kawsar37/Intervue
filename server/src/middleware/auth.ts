@@ -1,18 +1,48 @@
 import { Request, Response, NextFunction } from "express";
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
 
 let _client: MongoClient | null = null;
+let _db: Db | null = null;
 
-function getDb() {
+function getDb(): Db {
   if (!_client) {
     _client = new MongoClient(process.env.MONGODB_URI!);
   }
-  return _client.db();
+  if (!_db) {
+    _db = _client.db("intervue");
+  }
+  return _db;
 }
 
 function parseCookie(cookies: string, name: string): string | null {
   const match = cookies.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+async function verifyJwt(token: string): Promise<{ userId: string; email: string } | null> {
+  try {
+    // Fetch JWKS from better-auth
+    const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+    const jwksUrl = `${baseURL}/api/auth/jwks`;
+    const jwksRes = await fetch(jwksUrl);
+    const jwks = await jwksRes.json();
+
+    if (!jwks?.keys?.length) return null;
+
+    // Use jose to verify the JWT with the JWKS
+    const { jwtVerify, createRemoteJWKSet } = await import("jose");
+    const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: baseURL,
+    });
+
+    return {
+      userId: (payload.sub as string) || "",
+      email: (payload.email as string) || "",
+    };
+  } catch {
+    return null;
+  }
 }
 
 export const authMiddleware = async (
@@ -21,49 +51,57 @@ export const authMiddleware = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    let token: string | null = null;
+    // 1) Try JWT from Authorization header
+    const authHeader = req.headers.authorization || "";
+    if (authHeader.startsWith("Bearer ")) {
+      const bearerToken = authHeader.slice(7);
 
-    // 1) Try to read from the signed session cookie.
-    //    On HTTPS, better-auth prefixes with __Secure-
+      // Check if it's a JWT (has 3 parts separated by dots)
+      if (bearerToken.split(".").length === 3) {
+        const payload = await verifyJwt(bearerToken);
+        if (payload) {
+          (req as any).userId = payload.userId;
+          (req as any).userEmail = payload.email;
+          next();
+          return;
+        }
+      }
+
+      // Not a JWT — try as raw session token (fallback for localhost)
+      const token = bearerToken.split(".")[0] || null;
+      if (token) {
+        const db = getDb();
+        const session = await db.collection("session").findOne({ token });
+        if (session?.userId) {
+          (req as any).userId = session.userId;
+          (req as any).userEmail = "";
+          next();
+          return;
+        }
+      }
+    }
+
+    // 2) Try session cookie (fallback for same-origin)
     const cookieHeader = req.headers.cookie || "";
     let cookieToken = parseCookie(cookieHeader, "__Secure-better-auth.session_token");
     if (!cookieToken) {
       cookieToken = parseCookie(cookieHeader, "better-auth.session_token");
     }
     if (cookieToken) {
-      token = cookieToken.split(".")[0] || null;
-    }
-
-    // 2) Fall back to the Authorization header.
-    if (!token) {
-      const authHeader = req.headers.authorization || "";
-      const bearerToken = authHeader.startsWith("Bearer ")
-        ? authHeader.slice(7)
-        : "";
-      if (bearerToken) {
-        token = bearerToken.split(".")[0] || null;
-      }
-    }
-
-    // 3) If we have a token, look up the session in DB
-    if (token) {
-      const db = getDb();
-      const session = await db.collection("session").findOne({ token });
-
-      if (session && session.userId) {
-        if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
-          res.status(401).json({ success: false, message: "Session expired" });
+      const rawToken = cookieToken.split(".")[0] || null;
+      if (rawToken) {
+        const db = getDb();
+        const session = await db.collection("session").findOne({ token: rawToken });
+        if (session?.userId) {
+          (req as any).userId = session.userId;
+          (req as any).userEmail = "";
+          next();
           return;
         }
-        const user = await db.collection("user").findOne({ _id: session.userId });
-        (req as any).userId = session.userId;
-        (req as any).userEmail = user?.email || "";
-        next();
-        return;
       }
     }
 
-    // 4) Fallback: trust x-user-id header (sent by Next.js proxy after verifying session)
+    // 3) Fallback: trust x-user-id header (from Next.js proxy)
     const headerUserId = req.headers["x-user-id"] as string | undefined;
     if (headerUserId) {
       (req as any).userId = headerUserId;

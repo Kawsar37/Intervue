@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 
@@ -17,6 +18,7 @@ export function getAuth(): any {
         expiresIn: 60 * 60 * 24 * 7,
         updateAge: 60 * 60 * 24,
       },
+      plugins: [jwt()],
       trustedOrigins: [process.env.CLIENT_URL || "http://localhost:3000"],
     });
   }

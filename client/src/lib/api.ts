@@ -55,15 +55,12 @@ async function request<T>(
     ...customHeaders,
   };
 
-  // Send user ID in header
-  if (_currentUserId) {
+  // Send JWT token for cross-origin auth, fallback to x-user-id header
+  const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt_token") : null;
+  if (jwt) {
+    (headers as Record<string, string>)["Authorization"] = `Bearer ${jwt}`;
+  } else if (_currentUserId) {
     (headers as Record<string, string>)["x-user-id"] = _currentUserId;
-  }
-
-  // Also send session token as Bearer
-  const token = getSessionToken();
-  if (token) {
-    (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
   }
 
   const response = await fetch(url, {
