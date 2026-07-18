@@ -1,8 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { StartInterviewForm } from "@/features/interview/components/start-interview-form";
+import { Loader2 } from "lucide-react";
 
 export default function InterviewsPage() {
   return (
@@ -18,7 +20,15 @@ export default function InterviewsPage() {
             </p>
           </div>
 
-          <StartInterviewForm />
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            }
+          >
+            <StartInterviewForm />
+          </Suspense>
         </div>
       </main>
 
