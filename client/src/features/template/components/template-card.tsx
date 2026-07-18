@@ -20,7 +20,7 @@ const difficultyColors = {
 
 export function TemplateCard({ template }: TemplateCardProps) {
   return (
-    <Card className="group transition-shadow hover:shadow-md">
+    <Card className="group transition-shadow hover:shadow-md p-4">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">{template.title}</CardTitle>
@@ -58,18 +58,17 @@ export function TemplateCard({ template }: TemplateCardProps) {
             </div>
           </div>
         </div>
-
-        <Link
-          href={`/templates/${template._id}`}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "flex w-full items-center justify-center gap-2"
-          )}
-        >
-          View Details
-          <ChevronRight className="h-4 w-4" />
-        </Link>
       </CardContent>
+      <Link
+        href={`/templates/${template._id}`}
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          "flex w-full items-center justify-center gap-2 mt-auto",
+        )}
+      >
+        View Details
+        <ChevronRight className="h-4 w-4" />
+      </Link>
     </Card>
   );
 }
