@@ -24,8 +24,12 @@ export const authMiddleware = async (
     let token: string | null = null;
 
     // 1) Try to read from the signed session cookie.
+    //    On HTTPS, better-auth prefixes with __Secure-
     const cookieHeader = req.headers.cookie || "";
-    const cookieToken = parseCookie(cookieHeader, "better-auth.session_token");
+    let cookieToken = parseCookie(cookieHeader, "__Secure-better-auth.session_token");
+    if (!cookieToken) {
+      cookieToken = parseCookie(cookieHeader, "better-auth.session_token");
+    }
     if (cookieToken) {
       token = cookieToken.split(".")[0] || null;
     }
