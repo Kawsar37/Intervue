@@ -7,7 +7,7 @@ let _auth: any = null;
 export function getAuth(): any {
   if (!_auth) {
     const client = new MongoClient(process.env.MONGODB_URI!);
-    const db = client.db();
+    const db = client.db("intervue");
     _auth = betterAuth({
       database: mongodbAdapter(db, { client }),
       emailAndPassword: {
