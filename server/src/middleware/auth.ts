@@ -1,40 +1,51 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./errorHandler";
-import { getAuth } from "../config/auth";
+import { MongoClient } from "mongodb";
+
+let _client: MongoClient | null = null;
+
+function getDb() {
+  if (!_client) {
+    _client = new MongoClient(process.env.MONGODB_URI!);
+  }
+  return _client.db();
+}
 
 export const authMiddleware = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    // Try to get session from cookie first, then from Authorization header
-    const cookieHeader = req.headers.cookie || "";
     const authHeader = req.headers.authorization || "";
-    const sessionToken = authHeader.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
-    const headers = new Headers();
-    if (cookieHeader) {
-      headers.set("cookie", cookieHeader);
-    }
-    if (sessionToken) {
-      headers.set("cookie", `better-auth.session_token=${sessionToken}`);
-    }
-
-    const session = await getAuth().api.getSession({
-      headers,
-    });
-
-    if (!session?.user?.id) {
+    if (!token) {
       throw new AppError("Unauthorized - please sign in", 401);
     }
 
-    (req as any).userId = session.user.id;
-    (req as any).userEmail = session.user.email;
+    const db = getDb();
+    const session = await db.collection("session").findOne({ token });
+
+    if (!session || !session.userId) {
+      throw new AppError("Unauthorized - please sign in", 401);
+    }
+
+    if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+      throw new AppError("Session expired", 401);
+    }
+
+    const user = await db.collection("user").findOne({ _id: session.userId });
+
+    if (!user) {
+      throw new AppError("User not found", 401);
+    }
+
+    (req as any).userId = session.userId;
+    (req as any).userEmail = user.email;
     next();
-  } catch {
+  } catch (error) {
+    if (error instanceof AppError) throw error;
     throw new AppError("Unauthorized - please sign in", 401);
   }
 };

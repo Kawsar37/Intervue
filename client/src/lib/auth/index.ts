@@ -27,6 +27,9 @@ export const auth = betterAuth({
       enabled: true,
       maxAge: 60 * 60 * 24 * 7,
     },
+    cookieOptions: {
+      httpOnly: false,
+    },
   },
   trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"],
 });
