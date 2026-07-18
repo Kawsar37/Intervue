@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, LogOut, User, Heart } from "lucide-react";
+import { Menu, LogOut, User, Heart, Home, LayoutDashboard, FileText, Info } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -133,55 +133,91 @@ export function Navbar() {
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[300px]">
-            <div className="flex flex-col space-y-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="flex flex-col space-y-2 pt-4">
-                {isAuthenticated ? (
-                  <>
-                    <div className="rounded-lg bg-muted p-3">
-                      <p className="text-sm font-medium">{user?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        signOut();
-                        setIsOpen(false);
-                      }}
+          <SheetContent side="right" className="w-[280px] p-0">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+
+            <div className="flex h-full flex-col">
+              {/* User Profile Section */}
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3 border-b p-4">
+                  <Avatar className="h-10 w-10">
+                    {user?.image && (
+                      <AvatarImage src={user.image} alt={user.name || "User"} referrerPolicy="no-referrer" />
+                    )}
+                    <AvatarFallback>
+                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{user?.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="border-b p-4">
+                  <p className="text-sm font-medium">Welcome</p>
+                  <p className="text-xs text-muted-foreground">Sign in to access all features</p>
+                </div>
+              )}
+
+              {/* Nav Links */}
+              <nav className="flex-1 overflow-y-auto p-2">
+                <div className="flex flex-col gap-0.5">
+                  {[
+                    { label: "Home", href: "/", icon: Home },
+                    { label: "Templates", href: "/templates", icon: LayoutDashboard },
+                    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+                    { label: "My Resumes", href: "/resumes", icon: FileText },
+                    { label: "Favorites", href: "/favorites", icon: Heart },
+                    { label: "About", href: "/about", icon: Info },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </>
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </nav>
+
+              {/* Footer Actions */}
+              <div className="border-t p-4">
+                {isAuthenticated ? (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </Button>
                 ) : (
-                  <>
+                  <div className="flex flex-col gap-2">
                     <Link
                       href="/login"
                       onClick={() => setIsOpen(false)}
-                      className={cn(buttonVariants({ variant: "ghost" }))}
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "w-full justify-center"
+                      )}
                     >
                       Sign In
                     </Link>
                     <Link
                       href="/register"
                       onClick={() => setIsOpen(false)}
-                      className={cn(buttonVariants())}
+                      className={cn(buttonVariants(), "w-full justify-center")}
                     >
                       Get Started
                     </Link>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
