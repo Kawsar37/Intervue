@@ -55,10 +55,32 @@ interface SpeechRecognitionAlternative {
   confidence: number;
 }
 
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognitionInstance extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInstance;
+}
+
 declare global {
   interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
+    SpeechRecognition: SpeechRecognitionConstructor;
+    webkitSpeechRecognition: SpeechRecognitionConstructor;
   }
 }
 
@@ -74,15 +96,14 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const { data: interviewResponse, isLoading } = useInterview(interviewId);
   const submitAnswerMutation = useSubmitAnswer();
   const completeInterviewMutation = useCompleteInterview();
 
-  const interview = interviewResponse?.data;
-  const isVoiceMode = interview?.mode === "voice";
+  const isVoiceMode = interviewResponse?.data?.mode === "voice";
 
   // Initialize speech synthesis
   useEffect(() => {
@@ -167,7 +188,7 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsListening(false);
       if (event.error === "not-allowed") {
@@ -195,18 +216,18 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
 
   // Auto-speak question when index changes in voice mode
   useEffect(() => {
-    if (isVoiceMode && interview) {
+    if (isVoiceMode && interviewResponse?.data) {
       stopSpeaking();
       stopListening();
-      setTranscript("");
       const timer = setTimeout(() => {
-        speakQuestion(interview.questions[currentIndex].question);
+        setTranscript("");
+        speakQuestion(interviewResponse.data.questions[currentIndex].question);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [currentIndex, isVoiceMode, interview?.questions.length]);
+  }, [currentIndex, isVoiceMode, interviewResponse?.data?.questions.length]);
 
-  if (isLoading || !interviewResponse) {
+  if (isLoading || !interviewResponse?.data) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -214,6 +235,7 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     );
   }
 
+  const interview = interviewResponse.data;
   const questions = interview.questions;
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;

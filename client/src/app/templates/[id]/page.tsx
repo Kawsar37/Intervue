@@ -127,7 +127,11 @@ export default function TemplateDetailPage() {
           </Card>
 
           <div className="flex gap-4">
-            <Button size="lg" className="flex-1">
+            <Button
+              size="lg"
+              className="flex-1"
+              onClick={() => router.push(`/interviews?templateId=${templateData._id}`)}
+            >
               Start Interview
             </Button>
             <Button size="lg" variant="outline">

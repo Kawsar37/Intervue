@@ -61,7 +61,7 @@ export interface InterviewTemplate {
 // Interview types
 export interface Interview {
   _id: string;
-  templateId: string;
+  templateId: string | InterviewTemplate;
   userId: string;
   resumeId?: string;
   jobDescription?: string;

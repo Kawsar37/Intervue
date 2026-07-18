@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTemplates } from "@/features/template/api/use-template";
 import { useResumes } from "@/features/resume/api/use-resume";
 import { useStartInterview } from "../api/use-interview";
@@ -22,7 +22,10 @@ import { cn } from "@/lib/utils";
 
 export function StartInterviewForm() {
   const router = useRouter();
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const searchParams = useSearchParams();
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
+    searchParams.get("templateId") || ""
+  );
   const [selectedResumeId, setSelectedResumeId] = useState<string>("");
   const [jobDescription, setJobDescription] = useState("");
   const [mode, setMode] = useState<"text" | "voice">("text");
@@ -124,10 +127,14 @@ export function StartInterviewForm() {
               value={selectedTemplateId}
               onValueChange={handleTemplateChange}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a template" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose a template">
+                  {selectedTemplate
+                    ? `${selectedTemplate.title} (${selectedTemplate.difficulty})`
+                    : "Choose a template"}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-72">
                 {templates.map((template) => (
                   <SelectItem key={template._id} value={template._id}>
                     {template.title} ({template.difficulty})
@@ -165,10 +172,14 @@ export function StartInterviewForm() {
               value={selectedResumeId}
               onValueChange={handleResumeChange}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a resume" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a resume">
+                  {selectedResumeId === "none"
+                    ? "No resume"
+                    : resumes?.find((r) => r._id === selectedResumeId)?.fileName || "Select a resume"}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-72">
                 <SelectItem value="none">No resume</SelectItem>
                 {resumes?.map((resume) => (
                   <SelectItem key={resume._id} value={resume._id}>

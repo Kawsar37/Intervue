@@ -48,7 +48,9 @@ export function RecentInterviews({ interviews }: RecentInterviewsProps) {
               >
                 <div className="space-y-1">
                   <p className="font-medium">
-                    {(interview.templateId as unknown as { title?: string })?.title || "Interview"}
+                    {typeof interview.templateId === "object" && interview.templateId
+                      ? interview.templateId.title
+                      : "Interview"}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-3 w-3" />

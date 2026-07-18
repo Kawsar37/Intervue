@@ -13,6 +13,7 @@ AI-powered interview platform that helps users practice and improve their interv
 ## Tech Stack
 
 ### Frontend
+
 - Next.js 14 (App Router)
 - React
 - TypeScript
@@ -22,12 +23,14 @@ AI-powered interview platform that helps users practice and improve their interv
 - React Hook Form + Zod
 
 ### Backend
+
 - Node.js
 - Express.js
 - TypeScript
 - MongoDB with Mongoose
 
 ### AI
+
 - Gemini API
 
 ## Project Structure
@@ -51,18 +54,21 @@ Intervue/
 ### Installation
 
 1. Clone the repository
+
 ```bash
-git clone <repository-url>
+git clone https://github.com/Kawsar37/Intervue.git
 cd Intervue
 ```
 
 2. Install frontend dependencies
+
 ```bash
 cd client
 npm install
 ```
 
 3. Install backend dependencies
+
 ```bash
 cd ../server
 npm install
@@ -75,12 +81,14 @@ Create `.env` files in both `client/` and `server/` directories.
 5. Start development servers
 
 Frontend:
+
 ```bash
 cd client
 npm run dev
 ```
 
 Backend:
+
 ```bash
 cd server
 npm run dev
