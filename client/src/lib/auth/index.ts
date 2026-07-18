@@ -2,6 +2,7 @@ import dns from "node:dns";
 dns.setServers(["1.1.1.1", "1.0.0.1"]);
 
 import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 
@@ -28,6 +29,7 @@ export const auth = betterAuth({
       maxAge: 60 * 60 * 24 * 7,
     },
   },
+  plugins: [jwt()],
   advanced: {
     cookies: {
       session_token: {
