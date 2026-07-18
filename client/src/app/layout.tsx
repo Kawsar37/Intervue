@@ -26,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <head>
+        <meta name="referrer" content="no-referrer" />
+      </head>
       <body
         className="min-h-full flex flex-col bg-background font-sans text-foreground [scrollbar-gutter:stable]"
         cz-shortcut-listen="true"

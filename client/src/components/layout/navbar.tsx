@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +52,9 @@ export function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
                 <Avatar className="h-8 w-8">
+                  {user?.image && (
+                    <AvatarImage src={user.image} alt={user.name || "User"} referrerPolicy="no-referrer" />
+                  )}
                   <AvatarFallback>
                     {user?.name?.charAt(0)?.toUpperCase() || "U"}
                   </AvatarFallback>
