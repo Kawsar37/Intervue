@@ -1,6 +1,3 @@
-import dns from "node:dns";
-dns.setServers(["1.1.1.1", "1.0.0.1"]);
-
 import { Request, Response, NextFunction } from "express";
 import { MongoClient } from "mongodb";
 
@@ -27,8 +24,6 @@ export const authMiddleware = async (
     let token: string | null = null;
 
     // 1) Try to read from the signed session cookie.
-    //    The cookie value is "<rawToken>.<hmacSignature>" — we only need the
-    //    raw token (the part before the first dot) to look up the session.
     const cookieHeader = req.headers.cookie || "";
     const cookieToken = parseCookie(cookieHeader, "better-auth.session_token");
     if (cookieToken) {
@@ -47,9 +42,7 @@ export const authMiddleware = async (
     }
 
     if (!token) {
-      res
-        .status(401)
-        .json({ success: false, message: "Authentication required" });
+      res.status(401).json({ success: false, message: "Authentication required" });
       return;
     }
 
@@ -57,9 +50,7 @@ export const authMiddleware = async (
     const session = await db.collection("session").findOne({ token });
 
     if (!session || !session.userId) {
-      res
-        .status(401)
-        .json({ success: false, message: "Invalid or expired session" });
+      res.status(401).json({ success: false, message: "Invalid or expired session" });
       return;
     }
 
