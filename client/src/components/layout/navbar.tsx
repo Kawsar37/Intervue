@@ -2,9 +2,23 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, LogOut, User, Heart, Home, LayoutDashboard, FileText, Info } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  User,
+  Heart,
+  Home,
+  LayoutDashboard,
+  FileText,
+  Info,
+} from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,7 +156,11 @@ export function Navbar() {
                 <div className="flex items-center gap-3 border-b p-4">
                   <Avatar className="h-10 w-10">
                     {user?.image && (
-                      <AvatarImage src={user.image} alt={user.name || "User"} referrerPolicy="no-referrer" />
+                      <AvatarImage
+                        src={user.image}
+                        alt={user.name || "User"}
+                        referrerPolicy="no-referrer"
+                      />
                     )}
                     <AvatarFallback>
                       {user?.name?.charAt(0)?.toUpperCase() || "U"}
@@ -150,13 +168,17 @@ export function Navbar() {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{user?.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user?.email}
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="border-b p-4">
                   <p className="text-sm font-medium">Welcome</p>
-                  <p className="text-xs text-muted-foreground">Sign in to access all features</p>
+                  <p className="text-xs text-muted-foreground">
+                    Sign in to access all features
+                  </p>
                 </div>
               )}
 
@@ -165,8 +187,16 @@ export function Navbar() {
                 <div className="flex flex-col gap-0.5">
                   {[
                     { label: "Home", href: "/", icon: Home },
-                    { label: "Templates", href: "/templates", icon: LayoutDashboard },
-                    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+                    {
+                      label: "Templates",
+                      href: "/templates",
+                      icon: LayoutDashboard,
+                    },
+                    {
+                      label: "Dashboard",
+                      href: "/dashboard",
+                      icon: LayoutDashboard,
+                    },
                     { label: "My Resumes", href: "/resumes", icon: FileText },
                     { label: "Favorites", href: "/favorites", icon: Heart },
                     { label: "About", href: "/about", icon: Info },
@@ -205,7 +235,7 @@ export function Navbar() {
                       onClick={() => setIsOpen(false)}
                       className={cn(
                         buttonVariants({ variant: "outline" }),
-                        "w-full justify-center"
+                        "w-full justify-center",
                       )}
                     >
                       Sign In
