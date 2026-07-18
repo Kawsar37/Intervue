@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_URL = "";
 
 interface RequestOptions extends Omit<RequestInit, "method" | "body"> {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -7,7 +7,8 @@ interface RequestOptions extends Omit<RequestInit, "method" | "body"> {
 }
 
 function buildUrl(endpoint: string, params?: Record<string, string>): string {
-  const url = new URL(`${API_URL}${endpoint}`);
+  const base = API_URL || (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
+  const url = new URL(`${base}${endpoint}`);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value);
