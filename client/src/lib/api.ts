@@ -19,16 +19,22 @@ function buildUrl(endpoint: string, params?: Record<string, string>): string {
 function getSessionToken(): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(
-    /(?:^|;\s*)better-auth\.session_token=([^;]*)/
+    /(?:^|;\s*)better-auth\.session_token=([^;]*)/,
   );
   return match ? decodeURIComponent(match[1]) : null;
 }
 
 async function request<T>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, params, headers: customHeaders, ...rest } = options;
+  const {
+    method = "GET",
+    body,
+    params,
+    headers: customHeaders,
+    ...rest
+  } = options;
 
   const url = buildUrl(endpoint, params);
 
@@ -54,7 +60,9 @@ async function request<T>(
     const error = await response.json().catch(() => ({
       message: "An unexpected error occurred",
     }));
-    throw new Error(error.message || `Request failed with status ${response.status}`);
+    throw new Error(
+      error.message || `Request failed with status ${response.status}`,
+    );
   }
 
   if (response.status === 204) {

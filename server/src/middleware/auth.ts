@@ -20,24 +20,21 @@ export const authMiddleware = async (
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
     if (!token) {
-      (req as any).userId = "anonymous";
-      (req as any).userEmail = "";
-      return next();
+      res.status(401).json({ success: false, message: "Authentication required" });
+      return;
     }
 
     const db = getDb();
     const session = await db.collection("session").findOne({ token });
 
     if (!session || !session.userId) {
-      (req as any).userId = "anonymous";
-      (req as any).userEmail = "";
-      return next();
+      res.status(401).json({ success: false, message: "Invalid or expired session" });
+      return;
     }
 
     if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
-      (req as any).userId = "anonymous";
-      (req as any).userEmail = "";
-      return next();
+      res.status(401).json({ success: false, message: "Session expired" });
+      return;
     }
 
     const user = await db.collection("user").findOne({ _id: session.userId });
@@ -46,8 +43,6 @@ export const authMiddleware = async (
     (req as any).userEmail = user?.email || "";
     next();
   } catch {
-    (req as any).userId = "anonymous";
-    (req as any).userEmail = "";
-    next();
+    res.status(401).json({ success: false, message: "Authentication failed" });
   }
 };
