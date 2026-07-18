@@ -13,6 +13,7 @@ export interface IInterview extends Document {
   userId: string;
   resumeId?: mongoose.Types.ObjectId;
   jobDescription?: string;
+  mode: "text" | "voice";
   questions: IInterviewQuestion[];
   status: "pending" | "in_progress" | "completed";
   startedAt?: Date;
@@ -61,6 +62,11 @@ const interviewSchema = new Schema<IInterview>(
     },
     jobDescription: {
       type: String,
+    },
+    mode: {
+      type: String,
+      enum: ["text", "voice"],
+      default: "text",
     },
     questions: [interviewQuestionSchema],
     status: {

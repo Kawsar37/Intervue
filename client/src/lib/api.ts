@@ -32,6 +32,7 @@ async function request<T>(
   const response = await fetch(url, {
     method,
     headers,
+    credentials: "include",
     body: body ? JSON.stringify(body) : undefined,
     ...rest,
   });

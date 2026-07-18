@@ -16,7 +16,7 @@ export const startInterview = async (
   res: Response
 ): Promise<void> => {
   const { userId } = req;
-  const { templateId, resumeId, jobDescription } = req.body;
+  const { templateId, resumeId, jobDescription, mode } = req.body;
 
   const template = await InterviewTemplate.findById(templateId);
   if (!template) {
@@ -45,6 +45,7 @@ export const startInterview = async (
     userId,
     resumeId: resumeId || undefined,
     jobDescription: jobDescription || undefined,
+    mode: mode === "voice" ? "voice" : "text",
     questions: questions.map((q) => ({
       question: q.question,
       category: q.category,

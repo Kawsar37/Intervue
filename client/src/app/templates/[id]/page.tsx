@@ -51,6 +51,8 @@ export default function TemplateDetailPage() {
     );
   }
 
+  const templateData = template.data;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -68,15 +70,15 @@ export default function TemplateDetailPage() {
 
           <div>
             <div className="flex items-start justify-between gap-4">
-              <h1 className="text-3xl font-bold">{template.title}</h1>
+              <h1 className="text-3xl font-bold">{templateData.title}</h1>
               <Badge
                 variant="secondary"
-                className={cn(difficultyColors[template.difficulty])}
+                className={cn(difficultyColors[templateData.difficulty])}
               >
-                {template.difficulty}
+                {templateData.difficulty}
               </Badge>
             </div>
-            <p className="mt-4 text-muted-foreground">{template.description}</p>
+            <p className="mt-4 text-muted-foreground">{templateData.description}</p>
           </div>
 
           <Card>
@@ -87,25 +89,25 @@ export default function TemplateDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Category</p>
-                  <Badge variant="outline">{template.category}</Badge>
+                  <Badge variant="outline">{templateData.category}</Badge>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Duration</p>
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    <span>{template.estimatedDuration} minutes</span>
+                    <span>{templateData.estimatedDuration} minutes</span>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Questions</p>
                   <div className="flex items-center gap-1">
                     <BookOpen className="h-4 w-4" />
-                    <span>{template.questionCount} questions</span>
+                    <span>{templateData.questionCount} questions</span>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Premium</p>
-                  <span>{template.isPremium ? "Yes" : "No"}</span>
+                  <span>{templateData.isPremium ? "Yes" : "No"}</span>
                 </div>
               </div>
 
@@ -114,7 +116,7 @@ export default function TemplateDetailPage() {
               <div className="space-y-2">
                 <p className="text-sm font-medium">Tags</p>
                 <div className="flex flex-wrap gap-2">
-                  {template.tags.map((tag) => (
+                  {(templateData.tags ?? []).map((tag) => (
                     <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>

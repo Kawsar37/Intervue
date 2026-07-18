@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./errorHandler";
-import { auth } from "../config/auth";
+import { getAuth } from "../config/auth";
 
 export const authMiddleware = async (
   req: Request,
@@ -8,7 +8,7 @@ export const authMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const session = await auth.api.getSession({
+    const session = await getAuth().api.getSession({
       headers: new Headers({
         cookie: req.headers.cookie || "",
       }),

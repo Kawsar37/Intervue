@@ -123,7 +123,10 @@ export function ResumeUpload() {
             type="file"
             accept=".pdf"
             onChange={handleFileSelect}
-            className="absolute inset-0 cursor-pointer opacity-0"
+            className={cn(
+              "absolute inset-0 cursor-pointer opacity-0",
+              selectedFile && "pointer-events-none"
+            )}
             disabled={uploadStatus === "uploading"}
           />
 

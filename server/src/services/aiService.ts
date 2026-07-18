@@ -1,4 +1,4 @@
-import { geminiModel } from "../config/gemini";
+import { getGeminiModel } from "../config/gemini";
 
 export interface ResumeAnalysis {
   skills: string[];
@@ -49,7 +49,7 @@ export const analyzeResume = async (text: string): Promise<ResumeAnalysis> => {
 Resume text:
 ${text}`;
 
-  const result = await geminiModel.generateContent(prompt);
+  const result = await getGeminiModel().generateContent(prompt);
   const response = result.response.text().trim();
 
   const jsonStr = response.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -96,7 +96,7 @@ Return ONLY valid JSON (no markdown, no code fences) as an array:
   { "question": "Question text here?", "category": "Category" }
 ]`;
 
-  const result = await geminiModel.generateContent(prompt);
+  const result = await getGeminiModel().generateContent(prompt);
   const response = result.response.text().trim();
 
   const jsonStr = response.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -127,7 +127,7 @@ Return ONLY valid JSON (no markdown, no code fences):
 
 Score guide: 0-3 = Poor, 4-5 = Below Average, 6-7 = Good, 8-9 = Excellent, 10 = Outstanding`;
 
-  const result = await geminiModel.generateContent(prompt);
+  const result = await getGeminiModel().generateContent(prompt);
   const response = result.response.text().trim();
 
   const jsonStr = response.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -165,7 +165,7 @@ Provide a comprehensive evaluation. Return ONLY valid JSON (no markdown, no code
 
 The overallScore should be the weighted average of category scores scaled to 0-100.`;
 
-  const result = await geminiModel.generateContent(prompt);
+  const result = await getGeminiModel().generateContent(prompt);
   const response = result.response.text().trim();
 
   const jsonStr = response.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();

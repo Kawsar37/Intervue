@@ -28,9 +28,9 @@ export function useTemplates(filters?: TemplateFilters) {
 }
 
 export function useTemplate(id: string) {
-  return useQuery<InterviewTemplate>({
+  return useQuery<{ success: boolean; data: InterviewTemplate }>({
     queryKey: ["templates", id],
-    queryFn: () => api.get<InterviewTemplate>(`/templates/${id}`),
+    queryFn: () => api.get(`/templates/${id}`),
     enabled: !!id,
   });
 }

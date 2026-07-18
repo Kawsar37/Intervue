@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { auth } from "../config/auth";
+import { getAuth } from "../config/auth";
 
 const router = Router();
 
@@ -10,7 +10,7 @@ router.all("/*", async (req, res) => {
 
     if (path === "/sign-up/email" && req.method === "POST") {
       const body = req.body;
-      const result = await auth.api.signUpEmail({
+      const result = await getAuth().api.signUpEmail({
         body: {
           name: body.name,
           email: body.email,
@@ -25,7 +25,7 @@ router.all("/*", async (req, res) => {
 
     if (path === "/sign-in/email" && req.method === "POST") {
       const body = req.body;
-      const result = await auth.api.signInEmail({
+      const result = await getAuth().api.signInEmail({
         body: {
           email: body.email,
           password: body.password,
@@ -43,7 +43,7 @@ router.all("/*", async (req, res) => {
 
     if (path === "/sign-out" && req.method === "POST") {
       try {
-        await auth.api.signOut({
+        await getAuth().api.signOut({
           headers: new Headers({ cookie: req.headers.cookie || "" }),
         });
       } catch {
@@ -58,7 +58,7 @@ router.all("/*", async (req, res) => {
     }
 
     if (path === "/get-session" && req.method === "GET") {
-      const session = await auth.api.getSession({
+      const session = await getAuth().api.getSession({
         headers: new Headers({
           cookie: req.headers.cookie || "",
         }),

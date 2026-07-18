@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   useInterview,
@@ -13,11 +13,53 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, ChevronLeft, ChevronRight, Check, Star } from "lucide-react";
+import {
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Star,
+  Mic,
+  MicOff,
+  Volume2,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface InterviewSessionProps {
   interviewId: string;
+}
+
+// Web Speech API types
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
 }
 
 export function InterviewSession({ interviewId }: InterviewSessionProps) {
@@ -28,9 +70,141 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     Record<number, { score: number; feedback: string }>
   >({});
 
+  // Voice mode state
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const recognitionRef = useRef<any>(null);
+  const synthRef = useRef<SpeechSynthesis | null>(null);
+
   const { data: interviewResponse, isLoading } = useInterview(interviewId);
   const submitAnswerMutation = useSubmitAnswer();
   const completeInterviewMutation = useCompleteInterview();
+
+  const interview = interviewResponse?.data;
+  const isVoiceMode = interview?.mode === "voice";
+
+  // Initialize speech synthesis
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      synthRef.current = window.speechSynthesis;
+    }
+    return () => {
+      if (synthRef.current) {
+        synthRef.current.cancel();
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Speak question using TTS
+  const speakQuestion = useCallback((text: string) => {
+    if (!synthRef.current) return;
+
+    synthRef.current.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    synthRef.current.speak(utterance);
+  }, []);
+
+  // Stop speaking
+  const stopSpeaking = useCallback(() => {
+    if (synthRef.current) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+    }
+  }, []);
+
+  // Start listening for voice input
+  const startListening = useCallback(() => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      toast.error("Speech recognition is not supported in your browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setTranscript("");
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        setTranscript((prev) => {
+          const newTranscript = prev ? prev + " " + finalTranscript : finalTranscript;
+          setAnswers((prevAnswers) => ({
+            ...prevAnswers,
+            [currentIndex]: newTranscript,
+          }));
+          return newTranscript;
+        });
+      } else if (interimTranscript) {
+        setTranscript(interimTranscript);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+      if (event.error === "not-allowed") {
+        toast.error("Microphone access denied. Please allow microphone access.");
+      } else if (event.error !== "aborted") {
+        toast.error("Speech recognition error. Please try again.");
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, [currentIndex]);
+
+  // Stop listening
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  }, []);
+
+  // Auto-speak question when index changes in voice mode
+  useEffect(() => {
+    if (isVoiceMode && interview) {
+      stopSpeaking();
+      stopListening();
+      setTranscript("");
+      const timer = setTimeout(() => {
+        speakQuestion(interview.questions[currentIndex].question);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, isVoiceMode, interview?.questions.length]);
 
   if (isLoading || !interviewResponse) {
     return (
@@ -40,7 +214,6 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     );
   }
 
-  const interview = interviewResponse.data;
   const questions = interview.questions;
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -65,6 +238,9 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     const answer = answers[currentIndex];
     if (!answer?.trim()) return;
 
+    stopListening();
+    stopSpeaking();
+
     try {
       const result = await submitAnswerMutation.mutateAsync({
         interviewId,
@@ -77,7 +253,11 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
         [currentIndex]: result.data.evaluation,
       }));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit answer. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit answer. Please try again.",
+      );
     }
   };
 
@@ -86,12 +266,16 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
       await completeInterviewMutation.mutateAsync(interviewId);
       router.push(`/interviews/${interviewId}/result`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to complete interview. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to complete interview. Please try again.",
+      );
     }
   };
 
-  const answeredCount = Object.keys(answers).filter(
-    (key) => answers[Number(key)]?.trim()
+  const answeredCount = Object.keys(answers).filter((key) =>
+    answers[Number(key)]?.trim(),
   ).length;
 
   const evaluatedCount = Object.keys(evaluations).length;
@@ -103,13 +287,14 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     <div className="space-y-6">
       {/* Progress Header */}
       <div className="space-y-2">
-        <div className="flex items-center justify-center justify-between text-sm text-muted-foreground">
-          <span>
-            Question {currentIndex + 1} of {questions.length}
-          </span>
-          <span>
-            {answeredCount} answered / {evaluatedCount} evaluated
-          </span>
+        <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground">
+          <span>Question {currentIndex + 1} of {questions.length}</span>
+          <span>{answeredCount} answered / {evaluatedCount} evaluated</span>
+          {isVoiceMode && (
+            <Badge variant="secondary" className="mt-1">
+              <Mic className="mr-1 h-3 w-3" /> Voice Mode
+            </Badge>
+          )}
         </div>
         <Progress value={progress} />
       </div>
@@ -121,20 +306,82 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
             <CardTitle className="text-lg">
               {currentQuestion.question}
             </CardTitle>
-            <Badge variant="outline">{currentQuestion.category}</Badge>
+            <div className="flex items-center gap-2">
+              {isVoiceMode && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => speakQuestion(currentQuestion.question)}
+                  disabled={isSpeaking}
+                  title="Read question aloud"
+                >
+                  <Volume2 className={cn("h-4 w-4", isSpeaking && "animate-pulse")} />
+                </Button>
+              )}
+              <Badge variant="outline">{currentQuestion.category}</Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Your Answer</Label>
-            <Textarea
-              placeholder="Type your answer here..."
-              value={currentAnswer}
-              onChange={(e) => handleAnswerChange(e.target.value)}
-              rows={6}
-              disabled={!!currentEvaluation}
-            />
-          </div>
+          {isVoiceMode ? (
+            /* Voice Mode UI */
+            <div className="space-y-4">
+              <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed p-8">
+                <Button
+                  size="lg"
+                  variant={isListening ? "destructive" : "default"}
+                  onClick={isListening ? stopListening : startListening}
+                  disabled={!!currentEvaluation}
+                  className={cn(
+                    "h-20 w-20 rounded-full",
+                    isListening && "animate-pulse"
+                  )}
+                >
+                  {isListening ? (
+                    <MicOff className="h-8 w-8" />
+                  ) : (
+                    <Mic className="h-8 w-8" />
+                  )}
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  {isListening
+                    ? "Listening... Click to stop"
+                    : currentEvaluation
+                      ? "Answer submitted"
+                      : "Click to start speaking your answer"}
+                </p>
+                {transcript && (
+                  <div className="w-full rounded-lg bg-muted p-4">
+                    <p className="text-sm">{transcript}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Text input fallback for voice mode */}
+              <div className="space-y-2">
+                <Label>Or type your answer</Label>
+                <Textarea
+                  placeholder="Type your answer here..."
+                  value={currentAnswer}
+                  onChange={(e) => handleAnswerChange(e.target.value)}
+                  rows={4}
+                  disabled={!!currentEvaluation}
+                />
+              </div>
+            </div>
+          ) : (
+            /* Text Mode UI */
+            <div className="space-y-2">
+              <Label>Your Answer</Label>
+              <Textarea
+                placeholder="Type your answer here..."
+                value={currentAnswer}
+                onChange={(e) => handleAnswerChange(e.target.value)}
+                rows={6}
+                disabled={!!currentEvaluation}
+              />
+            </div>
+          )}
 
           {!currentEvaluation && hasAnswer && (
             <Button
@@ -163,8 +410,8 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
                     currentEvaluation.score >= 7
                       ? "default"
                       : currentEvaluation.score >= 5
-                      ? "secondary"
-                      : "destructive"
+                        ? "secondary"
+                        : "destructive"
                   }
                 >
                   {currentEvaluation.score}/10

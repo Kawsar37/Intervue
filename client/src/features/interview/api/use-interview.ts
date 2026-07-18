@@ -33,6 +33,7 @@ export function useStartInterview() {
       templateId: string;
       resumeId?: string;
       jobDescription?: string;
+      mode?: "text" | "voice";
     }
   >({
     mutationFn: (data) => api.post("/interviews", data),

@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IResume extends Document {
   userId: string;
   fileName: string;
-  fileUrl: string;
+  fileUrl?: string;
   extractedText: string;
   skills: string[];
   experience: {
@@ -34,7 +34,7 @@ const resumeSchema = new Schema<IResume>(
     },
     fileUrl: {
       type: String,
-      required: true,
+      default: "",
     },
     extractedText: {
       type: String,

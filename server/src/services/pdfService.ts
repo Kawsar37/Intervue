@@ -1,11 +1,8 @@
-import fs from "fs";
 import { PDFParse } from "pdf-parse";
 
-export const extractTextFromPDF = async (filePath: string): Promise<string> => {
+export const extractTextFromPDFBuffer = async (buffer: Buffer): Promise<string> => {
   try {
-    const dataBuffer = fs.readFileSync(filePath);
-    const parser = new PDFParse({ data: new Uint8Array(dataBuffer) });
-    // load() is on the prototype but marked private in types
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
     await (parser as any).load();
     const textResult = await parser.getText();
     return textResult.text;

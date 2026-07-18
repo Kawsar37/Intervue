@@ -1,9 +1,8 @@
-import fs from "fs";
 import { Response } from "express";
 import { AuthRequest } from "../types";
 import { Resume } from "../models/Resume";
 import { AppError } from "../middleware/errorHandler";
-import { extractTextFromPDF } from "../services/pdfService";
+import { extractTextFromPDFBuffer } from "../services/pdfService";
 import { analyzeResume } from "../services/aiService";
 
 export const uploadResume = async (
@@ -16,8 +15,8 @@ export const uploadResume = async (
     throw new AppError("No file uploaded", 400);
   }
 
-  // Extract text from PDF
-  const extractedText = await extractTextFromPDF(req.file.path);
+  // Extract text from PDF buffer (no file saved to disk)
+  const extractedText = await extractTextFromPDFBuffer(req.file.buffer);
 
   // Analyze resume with AI
   const analysis = await analyzeResume(extractedText);
@@ -26,7 +25,6 @@ export const uploadResume = async (
   const resume = await Resume.create({
     userId,
     fileName: req.file.originalname,
-    fileUrl: req.file.path,
     extractedText,
     skills: analysis.skills,
     experience: analysis.experience,
@@ -83,11 +81,6 @@ export const deleteResume = async (
 
   if (!resume) {
     throw new AppError("Resume not found", 404);
-  }
-
-  // Delete the file from disk
-  if (fs.existsSync(resume.fileUrl)) {
-    fs.unlinkSync(resume.fileUrl);
   }
 
   res.json({

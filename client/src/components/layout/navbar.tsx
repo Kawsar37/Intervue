@@ -99,11 +99,11 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
+          <SheetTrigger
+            className="inline-flex items-center justify-center size-8 rounded-lg hover:bg-muted hover:text-foreground md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px]">
             <div className="flex flex-col space-y-4">

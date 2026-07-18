@@ -1,3 +1,6 @@
+import dns from "node:dns";
+dns.setServers(["1.1.1.1", "1.0.0.1"]);
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -23,7 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background font-sans text-foreground">
+      <body
+        className="min-h-full flex flex-col bg-background font-sans text-foreground"
+        cz-shortcut-listen="true"
+      >
         <AuthProvider>
           <QueryProvider>
             {children}

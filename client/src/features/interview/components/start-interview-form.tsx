@@ -16,14 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Play } from "lucide-react";
+import { Loader2, Play, Mic, Keyboard } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function StartInterviewForm() {
   const router = useRouter();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [selectedResumeId, setSelectedResumeId] = useState<string>("");
   const [jobDescription, setJobDescription] = useState("");
+  const [mode, setMode] = useState<"text" | "voice">("text");
 
   const { data: templatesData, isLoading: templatesLoading } = useTemplates({
     limit: 50,
@@ -51,6 +53,7 @@ export function StartInterviewForm() {
         templateId: selectedTemplateId,
         resumeId: selectedResumeId || undefined,
         jobDescription: jobDescription || undefined,
+        mode,
       });
 
       router.push(`/interviews/${result.data._id}/session`);
@@ -69,6 +72,47 @@ export function StartInterviewForm() {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Interview Mode</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setMode("text")}
+              className={cn(
+                "flex flex-col items-center gap-3 rounded-lg border-2 p-6 transition-all",
+                mode === "text"
+                  ? "border-primary bg-primary/5"
+                  : "border-muted hover:border-primary/50"
+              )}
+            >
+              <Keyboard className={cn("h-8 w-8", mode === "text" ? "text-primary" : "text-muted-foreground")} />
+              <div className="text-center">
+                <p className="font-medium">Text Interview</p>
+                <p className="text-xs text-muted-foreground">Type your answers</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setMode("voice")}
+              className={cn(
+                "flex flex-col items-center gap-3 rounded-lg border-2 p-6 transition-all",
+                mode === "voice"
+                  ? "border-primary bg-primary/5"
+                  : "border-muted hover:border-primary/50"
+              )}
+            >
+              <Mic className={cn("h-8 w-8", mode === "voice" ? "text-primary" : "text-muted-foreground")} />
+              <div className="text-center">
+                <p className="font-medium">Voice Interview</p>
+                <p className="text-xs text-muted-foreground">Speak your answers</p>
+              </div>
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Select Template</CardTitle>
@@ -161,7 +205,7 @@ export function StartInterviewForm() {
         ) : (
           <>
             <Play className="mr-2 h-4 w-4" />
-            Start Interview
+            Start {mode === "voice" ? "Voice" : "Text"} Interview
           </>
         )}
       </Button>

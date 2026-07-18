@@ -21,7 +21,7 @@ export interface Resume {
   _id: string;
   userId: string;
   fileName: string;
-  fileUrl: string;
+  fileUrl?: string;
   extractedText: string;
   skills: string[];
   experience: WorkExperience[];
@@ -65,6 +65,7 @@ export interface Interview {
   userId: string;
   resumeId?: string;
   jobDescription?: string;
+  mode: "text" | "voice";
   questions: InterviewQuestion[];
   status: "pending" | "in_progress" | "completed";
   startedAt?: string;
