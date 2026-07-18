@@ -37,7 +37,6 @@ async function request<T>(
     ...customHeaders,
   };
 
-  // Pass session token as Bearer token for cross-origin auth
   const token = getSessionToken();
   if (token) {
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
