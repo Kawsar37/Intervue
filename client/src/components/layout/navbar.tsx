@@ -47,12 +47,16 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex md:items-center md:space-x-4">
+        <div className="hidden md:flex md:items-center">
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="ghost" size="icon" className="rounded-full" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                  />
                 }
               >
                 <Avatar className="h-8 w-8">

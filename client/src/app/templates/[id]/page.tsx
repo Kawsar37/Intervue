@@ -2,13 +2,14 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useTemplate } from "@/features/template/api/use-template";
+import { useCheckFavorite, useToggleFavorite } from "@/features/template/api/use-favorites";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, BookOpen, ArrowLeft, Loader2 } from "lucide-react";
+import { Clock, BookOpen, ArrowLeft, Loader2, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const difficultyColors = {
@@ -21,6 +22,10 @@ export default function TemplateDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: template, isLoading, error } = useTemplate(params.id as string);
+  const { data: favoriteData } = useCheckFavorite(params.id as string);
+  const toggleFavoriteMutation = useToggleFavorite();
+
+  const isFavorited = favoriteData?.data?.favorited ?? false;
 
   if (isLoading) {
     return (
@@ -134,8 +139,16 @@ export default function TemplateDetailPage() {
             >
               Start Interview
             </Button>
-            <Button size="lg" variant="outline">
-              Add to Favorites
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => toggleFavoriteMutation.mutate(templateData._id)}
+              disabled={toggleFavoriteMutation.isPending}
+            >
+              <Heart
+                className={cn("mr-2 h-4 w-4", isFavorited && "fill-current")}
+              />
+              {isFavorited ? "Remove from Favorites" : "Add to Favorites"}
             </Button>
           </div>
         </div>
