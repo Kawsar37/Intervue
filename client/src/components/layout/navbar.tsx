@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu, LogOut, User, Heart } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -85,6 +85,15 @@ export function Navbar() {
                   >
                     <User className="mr-2 h-4 w-4" />
                     Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link
+                    href="/favorites"
+                    className="flex items-center cursor-pointer"
+                  >
+                    <Heart className="mr-2 h-4 w-4" />
+                    Favorites
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>

@@ -20,6 +20,7 @@ export const config = {
     "/dashboard/:path*",
     "/interviews/:path*",
     "/resumes/:path*",
+    "/favorites/:path*",
     "/templates/manage/:path*",
     "/templates/new/:path*",
   ],
