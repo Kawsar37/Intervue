@@ -2,16 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { headers } from "next/headers";
-import { authClient } from "./lib/auth/client";
+import { auth } from "./lib/auth";
 
 export async function proxy(request: NextRequest) {
-  const { data: session } = await authClient.getSession({
+  const session = await auth.api.getSession({
     query: {
       disableCookieCache: true,
     },
-    fetchOptions: {
-      headers: await headers(),
-    },
+    headers: await headers(),
   });
 
   if (!session?.user) {
