@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { useFavorites } from "@/features/template/api/use-favorites";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Heart, Clock, BookOpen, Loader2, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
