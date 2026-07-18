@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
       });
     }
 
+    // JWKS endpoint for JWT verification
+    rewrites.push({
+      source: "/api/auth/jwks",
+      destination: `${baseUrl}/api/auth/jwks`,
+    });
+
     return rewrites;
   },
 };

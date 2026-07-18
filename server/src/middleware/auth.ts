@@ -19,32 +19,6 @@ function parseCookie(cookies: string, name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-async function verifyJwt(token: string): Promise<{ userId: string; email: string } | null> {
-  try {
-    // Fetch JWKS from better-auth
-    const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-    const jwksUrl = `${baseURL}/api/auth/jwks`;
-    const jwksRes = await fetch(jwksUrl);
-    const jwks = await jwksRes.json();
-
-    if (!jwks?.keys?.length) return null;
-
-    // Use jose to verify the JWT with the JWKS
-    const { jwtVerify, createRemoteJWKSet } = await import("jose");
-    const JWKS = createRemoteJWKSet(new URL(jwksUrl));
-    const { payload } = await jwtVerify(token, JWKS, {
-      issuer: baseURL,
-    });
-
-    return {
-      userId: (payload.sub as string) || "",
-      email: (payload.email as string) || "",
-    };
-  } catch {
-    return null;
-  }
-}
-
 export const authMiddleware = async (
   req: Request,
   res: Response,
@@ -58,20 +32,30 @@ export const authMiddleware = async (
 
       // Check if it's a JWT (has 3 parts separated by dots)
       if (bearerToken.split(".").length === 3) {
-        const payload = await verifyJwt(bearerToken);
-        if (payload) {
-          (req as any).userId = payload.userId;
-          (req as any).userEmail = payload.email;
-          next();
-          return;
+        // JWKS is on the client's better-auth instance (Vercel)
+        const jwksUrl = `${process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/auth/jwks`;
+        try {
+          const { jwtVerify, createRemoteJWKSet } = await import("jose");
+          const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+          const { payload } = await jwtVerify(bearerToken, JWKS, {
+            issuer: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+          });
+          if (payload?.sub) {
+            (req as any).userId = payload.sub;
+            (req as any).userEmail = (payload.email as string) || "";
+            next();
+            return;
+          }
+        } catch {
+          // JWT verification failed, fall through to other methods
         }
       }
 
       // Not a JWT — try as raw session token (fallback for localhost)
-      const token = bearerToken.split(".")[0] || null;
-      if (token) {
+      const rawToken = bearerToken.split(".")[0] || null;
+      if (rawToken) {
         const db = getDb();
-        const session = await db.collection("session").findOne({ token });
+        const session = await db.collection("session").findOne({ token: rawToken });
         if (session?.userId) {
           (req as any).userId = session.userId;
           (req as any).userEmail = "";
