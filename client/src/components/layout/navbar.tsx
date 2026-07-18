@@ -47,7 +47,7 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex md:items-center md:space-x-4">
+        <div className="hidden md:flex md:items-center md:space-x-4 md:overflow-hidden">
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
