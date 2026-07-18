@@ -25,22 +25,26 @@ const features = [
   {
     icon: Bot,
     title: "AI-Powered Interviews",
-    description: "Get realistic interview questions generated based on your resume and target role.",
+    description:
+      "Get realistic interview questions generated based on your resume and target role.",
   },
   {
     icon: FileText,
     title: "Resume Analysis",
-    description: "Upload your resume and let our AI extract your skills and experience.",
+    description:
+      "Upload your resume and let our AI extract your skills and experience.",
   },
   {
     icon: BarChart3,
     title: "Performance Tracking",
-    description: "Track your progress over time with detailed analytics and insights.",
+    description:
+      "Track your progress over time with detailed analytics and insights.",
   },
   {
     icon: Target,
     title: "Personalized Feedback",
-    description: "Receive constructive feedback on each answer to improve your skills.",
+    description:
+      "Receive constructive feedback on each answer to improve your skills.",
   },
 ];
 
@@ -48,32 +52,42 @@ const steps = [
   {
     step: 1,
     title: "Upload Your Resume",
-    description: "Start by uploading your resume or CV. Our AI will analyze your skills and experience.",
+    description:
+      "Start by uploading your resume or CV. Our AI will analyze your skills and experience.",
   },
   {
     step: 2,
     title: "Choose a Template",
-    description: "Select from our library of interview templates or create a custom one.",
+    description:
+      "Select from our library of interview templates or create a custom one.",
   },
   {
     step: 3,
     title: "Practice Interview",
-    description: "Answer AI-generated questions in a realistic interview simulation.",
+    description:
+      "Answer AI-generated questions in a realistic interview simulation.",
   },
   {
     step: 4,
     title: "Get Feedback",
-    description: "Receive detailed feedback and scores to improve your interview skills.",
+    description:
+      "Receive detailed feedback and scores to improve your interview skills.",
   },
 ];
 
 export default function HomePage() {
-  const { data: statsResponse } = useQuery<{ success: boolean; data: { totalUsers: number; totalInterviews: number; totalResumes: number } }>({
+  const { data: statsResponse } = useQuery<{
+    success: boolean;
+    data: { totalUsers: number; totalInterviews: number; totalResumes: number };
+  }>({
     queryKey: ["platform-stats"],
     queryFn: () => api.get("/stats"),
   });
 
-  const { data: testimonialsResponse } = useQuery<{ success: boolean; data: any[] }>({
+  const { data: testimonialsResponse } = useQuery<{
+    success: boolean;
+    data: any[];
+  }>({
     queryKey: ["testimonials"],
     queryFn: () => api.get("/testimonials"),
   });
@@ -114,12 +128,13 @@ export default function HomePage() {
               <span className="text-primary">AI Practice</span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-              Practice interviews with AI-powered feedback. Upload your resume, get personalized
-              questions, and improve your skills before the real interview.
+              Practice interviews with AI-powered feedback. Upload your resume,
+              get personalized questions, and improve your skills before the
+              real interview.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                href="/register"
+                href="/templates"
                 className={cn(buttonVariants({ size: "lg" }))}
               >
                 Get Started Free
@@ -127,7 +142,9 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/templates"
-                className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "outline" }),
+                )}
               >
                 Browse Templates
               </Link>
@@ -141,18 +158,24 @@ export default function HomePage() {
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-3xl font-bold">Everything You Need</h2>
               <p className="mt-4 text-muted-foreground">
-                Our platform provides all the tools you need to prepare for your next interview.
+                Our platform provides all the tools you need to prepare for your
+                next interview.
               </p>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {features.map((feature) => (
-                <Card key={feature.title} className="border-0 bg-background shadow-sm">
+                <Card
+                  key={feature.title}
+                  className="border-0 bg-background shadow-sm"
+                >
                   <CardHeader>
                     <feature.icon className="h-10 w-10 text-primary" />
                     <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -176,7 +199,9 @@ export default function HomePage() {
                     {item.step}
                   </div>
                   <h3 className="font-semibold">{item.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -196,7 +221,9 @@ export default function HomePage() {
               {platformStats.map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className="text-4xl font-bold">{stat.value}</div>
-                  <div className="mt-2 text-sm text-muted-foreground">{stat.label}</div>
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -214,12 +241,20 @@ export default function HomePage() {
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial: any) => (
-                <Card key={testimonial._id} className="border-0 bg-background shadow-sm">
+                <Card
+                  key={testimonial._id}
+                  className="border-0 bg-background shadow-sm"
+                >
                   <CardContent className="pt-6">
                     <div className="mb-3 flex gap-1">
-                      {Array.from({ length: testimonial.rating }).map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      ))}
+                      {Array.from({ length: testimonial.rating }).map(
+                        (_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                          />
+                        ),
+                      )}
                     </div>
                     <p className="mb-4 text-sm text-muted-foreground">
                       &ldquo;{testimonial.content}&rdquo;
@@ -248,7 +283,11 @@ export default function HomePage() {
             </div>
             <div className="mx-auto mt-12 max-w-3xl space-y-4">
               {faqs.map((faq: any) => (
-                <FaqItem key={faq._id} question={faq.question} answer={faq.answer} />
+                <FaqItem
+                  key={faq._id}
+                  question={faq.question}
+                  answer={faq.answer}
+                />
               ))}
             </div>
           </div>
@@ -260,13 +299,14 @@ export default function HomePage() {
             <div className="mx-auto max-w-2xl rounded-2xl bg-primary p-8 text-center text-primary-foreground md:p-12">
               <h2 className="text-3xl font-bold">Ready to Start Practicing?</h2>
               <p className="mt-4 text-primary-foreground/80">
-                Join thousands of job seekers who have improved their interview skills with Intervue.
+                Join thousands of job seekers who have improved their interview
+                skills with Intervue.
               </p>
               <Link
                 href="/register"
                 className={cn(
                   buttonVariants({ size: "lg", variant: "secondary" }),
-                  "mt-8 inline-flex"
+                  "mt-8 inline-flex",
                 )}
               >
                 Start Free Trial
@@ -299,9 +339,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         )}
       </button>
       {isOpen && (
-        <div className="px-4 pb-4 text-sm text-muted-foreground">
-          {answer}
-        </div>
+        <div className="px-4 pb-4 text-sm text-muted-foreground">{answer}</div>
       )}
     </div>
   );
