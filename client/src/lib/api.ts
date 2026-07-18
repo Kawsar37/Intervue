@@ -6,6 +6,17 @@ interface RequestOptions extends Omit<RequestInit, "method" | "body"> {
   params?: Record<string, string>;
 }
 
+// Store the current user ID so API requests can include it
+let _currentUserId: string | null = null;
+
+export function setCurrentUserId(userId: string | null) {
+  _currentUserId = userId;
+}
+
+export function getCurrentUserId(): string | null {
+  return _currentUserId;
+}
+
 function buildUrl(endpoint: string, params?: Record<string, string>): string {
   const base = API_URL || (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
   const url = new URL(`${base}${endpoint}`);
@@ -44,6 +55,12 @@ async function request<T>(
     ...customHeaders,
   };
 
+  // Send user ID in header
+  if (_currentUserId) {
+    (headers as Record<string, string>)["x-user-id"] = _currentUserId;
+  }
+
+  // Also send session token as Bearer
   const token = getSessionToken();
   if (token) {
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;

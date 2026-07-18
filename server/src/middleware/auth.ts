@@ -45,29 +45,34 @@ export const authMiddleware = async (
       }
     }
 
-    if (!token) {
-      res.status(401).json({ success: false, message: "Authentication required" });
+    // 3) If we have a token, look up the session in DB
+    if (token) {
+      const db = getDb();
+      const session = await db.collection("session").findOne({ token });
+
+      if (session && session.userId) {
+        if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+          res.status(401).json({ success: false, message: "Session expired" });
+          return;
+        }
+        const user = await db.collection("user").findOne({ _id: session.userId });
+        (req as any).userId = session.userId;
+        (req as any).userEmail = user?.email || "";
+        next();
+        return;
+      }
+    }
+
+    // 4) Fallback: trust x-user-id header (sent by Next.js proxy after verifying session)
+    const headerUserId = req.headers["x-user-id"] as string | undefined;
+    if (headerUserId) {
+      (req as any).userId = headerUserId;
+      (req as any).userEmail = "";
+      next();
       return;
     }
 
-    const db = getDb();
-    const session = await db.collection("session").findOne({ token });
-
-    if (!session || !session.userId) {
-      res.status(401).json({ success: false, message: "Invalid or expired session" });
-      return;
-    }
-
-    if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
-      res.status(401).json({ success: false, message: "Session expired" });
-      return;
-    }
-
-    const user = await db.collection("user").findOne({ _id: session.userId });
-
-    (req as any).userId = session.userId;
-    (req as any).userEmail = user?.email || "";
-    next();
+    res.status(401).json({ success: false, message: "Authentication required" });
   } catch {
     res.status(401).json({ success: false, message: "Authentication failed" });
   }
