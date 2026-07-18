@@ -47,13 +47,21 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex md:items-center md:space-x-4 md:overflow-hidden">
+        <div className="hidden md:flex md:items-center md:space-x-4">
           {isAuthenticated ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="focus:outline-none">
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="rounded-full" />
+                }
+              >
                 <Avatar className="h-8 w-8">
                   {user?.image && (
-                    <AvatarImage src={user.image} alt={user.name || "User"} referrerPolicy="no-referrer" />
+                    <AvatarImage
+                      src={user.image}
+                      alt={user.name || "User"}
+                      referrerPolicy="no-referrer"
+                    />
                   )}
                   <AvatarFallback>
                     {user?.name?.charAt(0)?.toUpperCase() || "U"}
@@ -67,13 +75,19 @@ export function Navbar() {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Link href="/dashboard" className="flex items-center cursor-pointer">
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center cursor-pointer"
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Dashboard
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Link href="/resumes" className="flex items-center cursor-pointer">
+                  <Link
+                    href="/resumes"
+                    className="flex items-center cursor-pointer"
+                  >
                     <User className="mr-2 h-4 w-4" />
                     My Resumes
                   </Link>
@@ -102,9 +116,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger
-            className="inline-flex items-center justify-center size-8 rounded-lg hover:bg-muted hover:text-foreground md:hidden"
-          >
+          <SheetTrigger className="inline-flex items-center justify-center size-8 rounded-lg hover:bg-muted hover:text-foreground md:hidden">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </SheetTrigger>
