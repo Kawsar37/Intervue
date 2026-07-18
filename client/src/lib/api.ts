@@ -18,8 +18,7 @@ export function getCurrentUserId(): string | null {
 }
 
 function buildUrl(endpoint: string, params?: Record<string, string>): string {
-  const base = API_URL || (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
-  const url = new URL(`${base}${endpoint}`);
+  const url = new URL(endpoint, typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value);
