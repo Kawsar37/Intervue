@@ -1,4 +1,4 @@
-const API_URL = "";
+const API_URL = "/api";
 
 interface RequestOptions extends Omit<RequestInit, "method" | "body"> {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
