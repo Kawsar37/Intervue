@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,8 +50,8 @@ export default function LoginPage() {
       }
 
       toast.success("Signed in successfully!");
-      router.refresh();
-      redirect("/dashboard");
+      // router.refresh();
+      router.push("/dashboard");
     } catch {
       toast.error("An unexpected error occurred");
     } finally {
