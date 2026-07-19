@@ -2,7 +2,10 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useTemplate } from "@/features/template/api/use-template";
-import { useCheckFavorite, useToggleFavorite } from "@/features/template/api/use-favorites";
+import {
+  useCheckFavorite,
+  useToggleFavorite,
+} from "@/features/template/api/use-favorites";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -11,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, BookOpen, ArrowLeft, Loader2, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth/client";
 
 const difficultyColors = {
   beginner: "bg-green-100 text-green-800",
@@ -24,6 +28,7 @@ export default function TemplateDetailPage() {
   const { data: template, isLoading, error } = useTemplate(params.id as string);
   const { data: favoriteData } = useCheckFavorite(params.id as string);
   const toggleFavoriteMutation = useToggleFavorite();
+  const { data: session } = useSession();
 
   const isFavorited = favoriteData?.data?.favorited ?? false;
 
@@ -83,7 +88,9 @@ export default function TemplateDetailPage() {
                 {templateData.difficulty}
               </Badge>
             </div>
-            <p className="mt-4 text-muted-foreground">{templateData.description}</p>
+            <p className="mt-4 text-muted-foreground">
+              {templateData.description}
+            </p>
           </div>
 
           <Card>
@@ -135,14 +142,22 @@ export default function TemplateDetailPage() {
             <Button
               size="lg"
               className="flex-1"
-              onClick={() => router.push(`/interviews?templateId=${templateData._id}`)}
+              onClick={() =>
+                router.push(`/interviews?templateId=${templateData._id}`)
+              }
             >
               Start Interview
             </Button>
             <Button
               size="lg"
               variant="outline"
-              onClick={() => toggleFavoriteMutation.mutate(templateData._id)}
+              onClick={() => {
+                if (!session) {
+                  router.push("/login");
+                  return;
+                }
+                toggleFavoriteMutation.mutate(templateData._id);
+              }}
               disabled={toggleFavoriteMutation.isPending}
             >
               <Heart
