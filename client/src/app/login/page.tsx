@@ -50,8 +50,9 @@ export default function LoginPage() {
       }
 
       toast.success("Signed in successfully!");
-      router.refresh();
-      router.push("/dashboard");
+      await new Promise((r) => setTimeout(r, 100));
+
+      router.replace("/dashboard");
     } catch {
       toast.error("An unexpected error occurred");
     } finally {
