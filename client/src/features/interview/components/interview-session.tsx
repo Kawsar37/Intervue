@@ -156,6 +156,12 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
+    // Handle network errors with retry
+    let retryCount = 0;
+    const maxRetries = 2;
+
+    const originalOnError = recognition.onerror;
+
     recognition.onstart = () => {
       setIsListening(true);
       setTranscript("");
@@ -191,10 +197,26 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsListening(false);
+
       if (event.error === "not-allowed") {
         toast.error("Microphone access denied. Please allow microphone access.");
+      } else if (event.error === "network") {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          toast.warning(`Network error. Retrying... (${retryCount}/${maxRetries})`);
+          setTimeout(() => {
+            try {
+              recognition.start();
+              setIsListening(true);
+            } catch (e) {
+              console.error("Retry failed:", e);
+            }
+          }, 1000);
+        } else {
+          toast.error("Speech recognition unavailable. Please type your answer instead.");
+        }
       } else if (event.error !== "aborted") {
-        toast.error("Speech recognition error. Please try again.");
+        toast.error("Speech recognition error. Please try again or type your answer.");
       }
     };
 
