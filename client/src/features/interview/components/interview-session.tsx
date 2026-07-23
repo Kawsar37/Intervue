@@ -98,6 +98,7 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const accumulatedTextRef = useRef<Record<number, string>>({});
 
   const { data: interviewResponse, isLoading } = useInterview(interviewId);
   const submitAnswerMutation = useSubmitAnswer();
@@ -164,7 +165,8 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
 
     recognition.onstart = () => {
       setIsListening(true);
-      setTranscript("");
+      // Show accumulated text if any, otherwise empty
+      setTranscript(accumulatedTextRef.current[currentIndex] || "");
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -181,16 +183,20 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
       }
 
       if (finalTranscript) {
-        setTranscript((prev) => {
-          const newTranscript = prev ? prev + " " + finalTranscript : finalTranscript;
-          setAnswers((prevAnswers) => ({
-            ...prevAnswers,
-            [currentIndex]: newTranscript,
-          }));
-          return newTranscript;
-        });
+        // Accumulate final text
+        const prev = accumulatedTextRef.current[currentIndex] || "";
+        const newAccumulated = prev ? prev + " " + finalTranscript : finalTranscript;
+        accumulatedTextRef.current[currentIndex] = newAccumulated;
+        setAnswers((prevAnswers) => ({
+          ...prevAnswers,
+          [currentIndex]: newAccumulated,
+        }));
+        // Show accumulated text (clears interim overlay)
+        setTranscript(newAccumulated);
       } else if (interimTranscript) {
-        setTranscript(interimTranscript);
+        // Show accumulated + interim as preview
+        const accumulated = accumulatedTextRef.current[currentIndex] || "";
+        setTranscript(accumulated ? accumulated + " " + interimTranscript : interimTranscript);
       }
     };
 
@@ -242,7 +248,8 @@ export function InterviewSession({ interviewId }: InterviewSessionProps) {
       stopSpeaking();
       stopListening();
       const timer = setTimeout(() => {
-        setTranscript("");
+        // Show accumulated text for this question if any
+        setTranscript(accumulatedTextRef.current[currentIndex] || "");
         speakQuestion(interviewResponse.data.questions[currentIndex].question);
       }, 500);
       return () => clearTimeout(timer);
